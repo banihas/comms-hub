@@ -192,38 +192,76 @@ export function ProductTour({ isOpen, onClose }: ProductTourProps) {
     if (!spotlightRect || !step) return {}
 
     const padding = 12
+    const margin = 16
     const tooltipWidth = 340
-    const tooltipEstimatedHeight = 200
+    const tooltipHeight = 220
+    const vw = window.innerWidth
+    const vh = window.innerHeight
 
     const style: React.CSSProperties = { maxWidth: tooltipWidth }
 
+    // Clamp helpers keep the tooltip fully inside the viewport
+    const clampTop = (t: number) =>
+      Math.max(margin, Math.min(t, vh - tooltipHeight - margin))
+    const clampLeft = (l: number) =>
+      Math.max(margin, Math.min(l, vw - tooltipWidth - margin))
+
+    // Available space on each side of the spotlight
+    const spaceBelow = vh - spotlightRect.bottom
+    const spaceAbove = spotlightRect.top
+    const spaceRight = vw - spotlightRect.right
+    const spaceLeft = spotlightRect.left
+
     switch (step.position) {
       case "right": {
-        const top = Math.max(16, Math.min(spotlightRect.top, window.innerHeight - tooltipEstimatedHeight - 16))
-        style.top = top
-        style.left = spotlightRect.right + padding
+        if (spaceRight >= tooltipWidth + padding + margin) {
+          style.left = spotlightRect.right + padding
+          style.top = clampTop(spotlightRect.top)
+        } else if (spaceLeft >= tooltipWidth + padding + margin) {
+          style.left = clampLeft(spotlightRect.left - tooltipWidth - padding)
+          style.top = clampTop(spotlightRect.top)
+        } else {
+          // No room beside: overlay near the top-left of the target
+          style.left = clampLeft(spotlightRect.left)
+          style.top = clampTop(spotlightRect.bottom + padding)
+        }
         break
       }
       case "left": {
-        const top = Math.max(16, Math.min(spotlightRect.top, window.innerHeight - tooltipEstimatedHeight - 16))
-        style.top = top
-        style.right = window.innerWidth - spotlightRect.left + padding
+        if (spaceLeft >= tooltipWidth + padding + margin) {
+          style.left = clampLeft(spotlightRect.left - tooltipWidth - padding)
+          style.top = clampTop(spotlightRect.top)
+        } else if (spaceRight >= tooltipWidth + padding + margin) {
+          style.left = spotlightRect.right + padding
+          style.top = clampTop(spotlightRect.top)
+        } else {
+          style.left = clampLeft(spotlightRect.right - tooltipWidth)
+          style.top = clampTop(spotlightRect.bottom + padding)
+        }
         break
       }
       case "bottom": {
-        const top = spotlightRect.bottom + padding
-        // If tooltip would go off-screen bottom, place it above instead
-        if (top + tooltipEstimatedHeight > window.innerHeight - 16) {
-          style.bottom = window.innerHeight - spotlightRect.top + padding
+        style.left = clampLeft(spotlightRect.left)
+        if (spaceBelow >= tooltipHeight + padding + margin) {
+          style.top = spotlightRect.bottom + padding
+        } else if (spaceAbove >= tooltipHeight + padding + margin) {
+          style.top = clampTop(spotlightRect.top - tooltipHeight - padding)
         } else {
-          style.top = top
+          // Target too tall to sit above/below: pin near bottom of viewport
+          style.top = vh - tooltipHeight - margin
         }
-        style.left = Math.max(16, Math.min(spotlightRect.left, window.innerWidth - tooltipWidth - 16))
         break
       }
       case "top": {
-        style.bottom = window.innerHeight - spotlightRect.top + padding
-        style.left = Math.max(16, Math.min(spotlightRect.left, window.innerWidth - tooltipWidth - 16))
+        style.left = clampLeft(spotlightRect.left)
+        if (spaceAbove >= tooltipHeight + padding + margin) {
+          style.top = clampTop(spotlightRect.top - tooltipHeight - padding)
+        } else if (spaceBelow >= tooltipHeight + padding + margin) {
+          style.top = spotlightRect.bottom + padding
+        } else {
+          // Target too tall to sit above/below: pin near top of viewport
+          style.top = margin
+        }
         break
       }
     }
