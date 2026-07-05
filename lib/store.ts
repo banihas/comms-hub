@@ -811,13 +811,156 @@ const defaultEventTasks: Task[] = defaultEvents.map((e) =>
   buildLinkedTaskForEvent(e, e.linkedTaskId as string, defaultSections)
 )
 
+// ── Current-week demo comms content ─────────────────────────────────────────
+// Demo data above is dated in the past, so the Content Calendar (which opens on
+// the current week) can look empty. These items are dated to the current week
+// so the calendar is always populated for demos.
+function getCurrentWeekdayDateStrs(): string[] {
+  const base = new Date()
+  const day = base.getDay()
+  const monday = new Date(base)
+  monday.setDate(base.getDate() + (day === 0 ? -6 : 1 - day))
+  const out: string[] = []
+  for (let i = 0; i < 5; i++) {
+    const d = new Date(monday)
+    d.setDate(monday.getDate() + i)
+    out.push(getDateStr(d))
+  }
+  return out
+}
+
+const currentWeekDays = getCurrentWeekdayDateStrs()
+
+interface WeeklyCommsSeed {
+  dayIndex: number
+  title: string
+  commsTitle: string
+  assignee: string
+  author: string
+  projectId: string
+  sectionId: string
+  audience: Audience
+  category: EnterpriseCategory
+  status: ContentStatus
+  channels: CommsChannel[]
+  banner?: BannerSize
+  cibcTodayBanner?: CibcTodayBannerType
+  tags: string[]
+}
+
+const weeklyCommsSeeds: WeeklyCommsSeed[] = [
+  {
+    dayIndex: 0, title: "CEO weekly leadership message", commsTitle: "CEO Weekly Leadership Message",
+    assignee: "Sarah Chen", author: "Alex Morgan", projectId: "p1", sectionId: "s2",
+    audience: "Enterprise", category: "Corporate Communications", status: "Confirmed",
+    channels: ["CIBC Today", "Email"], banner: "large", cibcTodayBanner: "Large Banner", tags: ["leadership", "weekly"],
+  },
+  {
+    dayIndex: 0, title: "People pulse survey reminder", commsTitle: "People Pulse Survey Reminder",
+    assignee: "Jordan Lee", author: "Riley Patel", projectId: "p2", sectionId: "s5",
+    audience: "Enterprise", category: "Internal Communications", status: "Pending",
+    channels: ["Viva Engage", "Email"], tags: ["engagement", "survey"],
+  },
+  {
+    dayIndex: 1, title: "Capital Markets morning note", commsTitle: "Capital Markets Morning Note",
+    assignee: "Taylor Kim", author: "Sarah Chen", projectId: "p3", sectionId: "s8",
+    audience: "SBU/FG", category: "Investor Relations", status: "Confirmed",
+    channels: ["CIBC Today"], banner: "small", cibcTodayBanner: "Small Banner", tags: ["markets", "daily"],
+  },
+  {
+    dayIndex: 1, title: "Digital banking feature spotlight", commsTitle: "Digital Banking Feature Spotlight",
+    assignee: "Alex Morgan", author: "Jordan Lee", projectId: "p4", sectionId: "s11",
+    audience: "Enterprise", category: "Marketing", status: "Pending",
+    channels: ["CIBC Today", "Social Media"], banner: "large", cibcTodayBanner: "Large Banner", tags: ["digital", "feature"],
+  },
+  {
+    dayIndex: 2, title: "Wealth management client outlook", commsTitle: "Wealth Management Client Outlook",
+    assignee: "Riley Patel", author: "Taylor Kim", projectId: "p5", sectionId: "s14",
+    audience: "SBU/FG", category: "Marketing", status: "Confirmed",
+    channels: ["Email"], tags: ["wealth", "outlook"],
+  },
+  {
+    dayIndex: 2, title: "Finance quarterly close update", commsTitle: "Finance Quarterly Close Update",
+    assignee: "Sarah Chen", author: "Alex Morgan", projectId: "p6", sectionId: "s17",
+    audience: "Enterprise", category: "Corporate Communications", status: "Pending",
+    channels: ["CIBC Today", "Email"], banner: "small", cibcTodayBanner: "Small Banner", tags: ["finance", "quarterly"],
+  },
+  {
+    dayIndex: 3, title: "AI & technology innovation brief", commsTitle: "AI & Technology Innovation Brief",
+    assignee: "Sarah Chen", author: "Riley Patel", projectId: "p9", sectionId: "s26",
+    audience: "Enterprise", category: "Internal Communications", status: "Confirmed",
+    channels: ["CIBC Today", "Viva Engage"], banner: "large", cibcTodayBanner: "Large Banner", tags: ["ai", "innovation"],
+  },
+  {
+    dayIndex: 3, title: "Diversity & inclusion newsletter", commsTitle: "Diversity & Inclusion Newsletter",
+    assignee: "Riley Patel", author: "Jordan Lee", projectId: "p2", sectionId: "s4",
+    audience: "Enterprise", category: "Internal Communications", status: "Pending",
+    channels: ["Email", "Viva Engage"], tags: ["diversity", "newsletter"],
+  },
+  {
+    dayIndex: 4, title: "US Region weekly recap", commsTitle: "US Region Weekly Recap",
+    assignee: "Alex Morgan", author: "Sarah Chen", projectId: "p1", sectionId: "s1",
+    audience: "Enterprise", category: "Corporate Communications", status: "Confirmed",
+    channels: ["CIBC Today", "Email"], banner: "small", cibcTodayBanner: "Small Banner", tags: ["us-region", "recap"],
+  },
+  {
+    dayIndex: 4, title: "Commercial banking success story", commsTitle: "Commercial Banking Success Story",
+    assignee: "Taylor Kim", author: "Riley Patel", projectId: "p5", sectionId: "s13",
+    audience: "SBU/FG", category: "Marketing", status: "Pending",
+    channels: ["CIBC Today", "Social Media"], banner: "large", cibcTodayBanner: "Large Banner", tags: ["commercial", "story"],
+  },
+]
+
+const currentWeekCommsTasks: Task[] = weeklyCommsSeeds.map((seed, i) => {
+  const date = currentWeekDays[seed.dayIndex]
+  return {
+    id: `tcw${i + 1}`,
+    title: seed.title,
+    description: `${seed.commsTitle} — scheduled communication for the current week.`,
+    assignee: seed.assignee,
+    dueDate: date,
+    priority: "medium",
+    status: seed.status === "Confirmed" ? "in-progress" : "todo",
+    sectionId: seed.sectionId,
+    projectId: seed.projectId,
+    tags: seed.tags,
+    completed: false,
+    createdAt: getDateStr(new Date()),
+    contentLabel: "For Comms Calendar",
+    contentStatus: seed.status,
+    commsTitle: seed.commsTitle,
+    commsLead: seed.assignee,
+    commsAuthor: seed.author,
+    commsAudience: seed.audience,
+    commsPublishDate: date,
+    commsEnterpriseCategory: seed.category,
+    commsChannels: seed.channels,
+    ...(seed.cibcTodayBanner ? { commsCibcTodayBanner: seed.cibcTodayBanner } : {}),
+    linkedTasks: [],
+    dependencies: [],
+  }
+})
+
+const currentWeekBannerAssignments: BannerAssignment[] = weeklyCommsSeeds
+  .map((seed, i) =>
+    seed.banner
+      ? {
+          id: `bcw${i + 1}`,
+          taskId: `tcw${i + 1}`,
+          date: currentWeekDays[seed.dayIndex],
+          bannerSize: seed.banner,
+        }
+      : null,
+  )
+  .filter((b): b is BannerAssignment => b !== null)
+
 let state: AppState = {
   projects: defaultProjects,
   sections: defaultSections,
-  tasks: [...defaultTasks, ...defaultEventTasks],
+  tasks: [...defaultTasks, ...defaultEventTasks, ...currentWeekCommsTasks],
   comments: defaultComments,
   notifications: defaultNotifications,
-  bannerAssignments: defaultBannerAssignments,
+  bannerAssignments: [...defaultBannerAssignments, ...currentWeekBannerAssignments],
   events: defaultEvents,
   activeProjectId: "p1",
   activeTaskId: null,

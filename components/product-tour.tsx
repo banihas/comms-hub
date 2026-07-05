@@ -14,6 +14,7 @@ interface TourStep {
   position: "top" | "bottom" | "left" | "right"
   navigateTo?: string     // ActiveView to navigate to before showing step
   onEnter?: () => void     // extra side-effect to run when the step is shown
+  offsetY?: number         // extra vertical offset (px) applied to the tooltip
 }
 
 const TOUR_STEPS: TourStep[] = [
@@ -48,6 +49,7 @@ const TOUR_STEPS: TourStep[] = [
       "Plan weekly communications with a visual calendar. See Large Banners, Small Banners, and content cards organized by day with status tracking (Pending / Confirmed).",
     position: "bottom",
     navigateTo: "content-calendar",
+    offsetY: 160,
   },
   {
     target: "approvals-area",
@@ -56,6 +58,7 @@ const TOUR_STEPS: TourStep[] = [
       "Track and manage approval workflows in one place. The \"Needs My Approval\" tab shows requests awaiting your review — approve or reject with a single click. The \"My Requests\" tab lets you monitor the status of approvals you've sent to others, with per-person status indicators.",
     position: "bottom",
     navigateTo: "approvals",
+    offsetY: 140,
   },
   {
     target: "reporting-channel-performance",
@@ -264,6 +267,11 @@ export function ProductTour({ isOpen, onClose }: ProductTourProps) {
         }
         break
       }
+    }
+
+    // Apply an optional downward offset while keeping the tooltip on-screen
+    if (step.offsetY && typeof style.top === "number") {
+      style.top = Math.min(style.top + step.offsetY, vh - tooltipHeight - margin)
     }
 
     return style
