@@ -4,7 +4,7 @@ import { useCallback, useEffect, useRef, useState } from "react"
 import { createPortal } from "react-dom"
 import { X, ChevronRight, ChevronLeft, Sparkles } from "lucide-react"
 import { Button } from "@/components/ui/button"
-import { setActiveView } from "@/lib/store"
+import { setActiveView, setActiveProject, setReportingTab } from "@/lib/store"
 import { useMounted } from "@/hooks/use-mounted"
 
 interface TourStep {
@@ -13,6 +13,7 @@ interface TourStep {
   description: string
   position: "top" | "bottom" | "left" | "right"
   navigateTo?: string     // ActiveView to navigate to before showing step
+  onEnter?: () => void     // extra side-effect to run when the step is shown
 }
 
 const TOUR_STEPS: TourStep[] = [
@@ -27,8 +28,10 @@ const TOUR_STEPS: TourStep[] = [
     target: "sidebar-projects",
     title: "Projects",
     description:
-      "All your team projects are listed here with open task counts. Click any project to see its tasks in List, Board, or Calendar view. You can also create new projects with the + button.",
+      "All your team projects are listed here with open task counts. Click any project — like the highlighted one — to see its tasks in List, Board, or Calendar view. You can also create new projects with the + button.",
     position: "right",
+    navigateTo: "project",
+    onEnter: () => setActiveProject("p1"),
   },
   {
     target: "home-stats",
@@ -53,6 +56,23 @@ const TOUR_STEPS: TourStep[] = [
       "Track and manage approval workflows in one place. The \"Needs My Approval\" tab shows requests awaiting your review — approve or reject with a single click. The \"My Requests\" tab lets you monitor the status of approvals you've sent to others, with per-person status indicators.",
     position: "bottom",
     navigateTo: "approvals",
+  },
+  {
+    target: "reporting-channel-performance",
+    title: "Channel Performance",
+    description:
+      "The Reporting tab breaks down how your communications are performing. The Channel Performance section shows open rates, click rates, and engagement across every channel — CIBC Today, Viva Engage, Email, Events and more — so you can see what's resonating with your audience.",
+    position: "top",
+    navigateTo: "reporting",
+    onEnter: () => setReportingTab("channel-performance"),
+  },
+  {
+    target: "events-area",
+    title: "Events",
+    description:
+      "Plan and track events end-to-end. Create an event, target the right audiences, and every event is automatically linked to a task and synced to the comms calendar so nothing falls through the cracks.",
+    position: "bottom",
+    navigateTo: "events",
   },
   {
     target: "comms-calendar-details",
@@ -108,6 +128,7 @@ export function ProductTour({ isOpen, onClose }: ProductTourProps) {
     if (step.navigateTo) {
       setActiveView(step.navigateTo as Parameters<typeof setActiveView>[0])
     }
+    step.onEnter?.()
 
     // Retry finding the element a few times to handle async view transitions
     let attempts = 0

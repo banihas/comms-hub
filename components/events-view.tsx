@@ -110,7 +110,7 @@ export function EventsView() {
   )
 
   return (
-    <div className="flex flex-1 flex-col overflow-hidden">
+    <div className="flex flex-1 flex-col overflow-hidden" data-tour="events-area">
       {/* ── Header ──────────────────────────────────────────────────────── */}
       <div className="flex flex-col border-b border-border bg-card">
         <div className="flex items-center justify-between gap-4 px-6 pt-5 pb-4">

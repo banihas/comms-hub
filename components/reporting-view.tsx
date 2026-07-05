@@ -54,6 +54,7 @@ import {
 import {
   useStore,
   setActiveTask,
+  setReportingTab,
   type Task,
   type CommsChannel,
   COMMS_CHANNEL_OPTIONS,
@@ -179,6 +180,7 @@ const STATUS_PIE_COLORS = ["hsl(215, 14%, 60%)", "hsl(217, 91%, 60%)", "hsl(142,
 // ═════════════════════════════════════════════════════════════
 
 export function ReportingView() {
+  const store = useStore()
   return (
     <div className="flex h-full flex-col overflow-hidden pl-4">
       {/* Header */}
@@ -195,7 +197,7 @@ export function ReportingView() {
       </div>
 
       {/* Tabs */}
-      <Tabs defaultValue="all-tasks" className="flex flex-1 flex-col overflow-hidden">
+      <Tabs value={store.reportingTab} onValueChange={setReportingTab} className="flex flex-1 flex-col overflow-hidden">
         <div className="border-b px-6 pt-2">
           <TabsList>
             <TabsTrigger value="all-tasks">All Tasks</TabsTrigger>
@@ -954,7 +956,7 @@ function ChannelPerformanceTab() {
   )
 
   return (
-    <div className="space-y-6 p-6">
+    <div className="space-y-6 p-6" data-tour="reporting-channel-performance">
       {/* Summary stat cards */}
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
         <StatCard icon={<Mail className="h-4 w-4" />} label="Comms Items" value={commsTaskCount} subtitle="Labelled 'For Comms Calendar'" />

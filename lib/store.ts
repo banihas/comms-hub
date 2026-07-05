@@ -286,6 +286,7 @@ export interface AppState {
   activeProjectId: string
   activeTaskId: string | null
   activeView: ActiveView
+  reportingTab: string
   viewMode: "list" | "board" | "calendar" | "gantt"
   searchQuery: string
   filterState: FilterState
@@ -821,6 +822,7 @@ let state: AppState = {
   activeProjectId: "p1",
   activeTaskId: null,
   activeView: "home",
+  reportingTab: "all-tasks",
   viewMode: "list",
   searchQuery: "",
   filterState: { priority: "all", assignee: "all", completed: "all", dueDateRange: "all" },
@@ -1100,6 +1102,11 @@ export function removeBannerAssignment(assignmentId: string) {
 
 export function setActiveView(view: ActiveView) {
   state = { ...state, activeView: view, activeTaskId: null }
+  emitChange()
+}
+
+export function setReportingTab(tab: string) {
+  state = { ...state, reportingTab: tab }
   emitChange()
 }
 
